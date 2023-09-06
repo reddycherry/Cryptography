@@ -1,0 +1,45 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    uint32_t P[18];
+    uint32_t S[4][256];
+} BlowfishContext;
+
+void BlowfishEncryptBlock(BlowfishContext* ctx, uint32_t* left, uint32_t* right) {
+    uint32_t l = *left;
+    uint32_t r = *right;
+
+    for (int i = 0; i < 16; i++) {
+        l ^= ctx->P[i];
+        r ^= (((ctx->S[0][(l >> 24) & 0xFF] + ctx->S[1][(l >> 16) & 0xFF]) ^ ctx->S[2][(l >> 8) & 0xFF]) + ctx->S[3][l & 0xFF]);
+        l, r = r, l;
+    }
+
+    l, r = r, l;
+
+    r ^= ctx->P[16];
+    l ^= ctx->P[17];
+
+    *left = l;
+    *right = r;
+}
+
+void main() {
+    BlowfishContext ctx;
+    uint32_t left = 0x12345678;
+    uint32_t right = 0x9ABCDEF0;
+
+    // Initialize the context with your own key and S-box values
+
+    printf("Original Data: 0x%08X 0x%08X\n", left, right);
+
+    BlowfishEncryptBlock(&ctx, &left, &right);
+    printf("Encrypted Data: 0x%08X 0x%08X\n", left, right);
+
+    // To decrypt, use the same context and call BlowfishEncryptBlock again
+
+    BlowfishEncryptBlock(&ctx, &left, &right);
+    printf("Decrypted Data: 0x%08X 0x%08X\n", left, right);
+}
