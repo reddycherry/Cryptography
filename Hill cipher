@@ -1,0 +1,62 @@
+include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define SIZE 3
+
+// Function to calculate the determinant of a 2x2 matrix
+int determinant(int matrix[SIZE][SIZE]) {
+    return matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[2][1] * matrix[1][2]) -
+           matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[2][0] * matrix[1][2]) +
+           matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[2][0] * matrix[1][1]);
+}
+
+// Function to calculate the modular inverse of a number
+int modInverse(int a, int m) {
+    for (int x = 1; x < m; x++) {
+        if ((a * x) % m == 1) {
+            return x;
+        }
+    }
+    return -1; // Modular inverse does not exist
+}
+
+// Function to encrypt a message using the Hill cipher
+void hillEncrypt(int key[SIZE][SIZE], char message[], char encryptedMessage[]) {
+    int len = strlen(message);
+    int paddedLen = len;
+    while (paddedLen % SIZE != 0) {
+        paddedLen++;
+    }
+
+    for (int i = len; i < paddedLen; i++) {
+        message[i] = 'X';
+    }
+    message[paddedLen] = '\0';
+
+    for (int i = 0; i < paddedLen; i += SIZE) {
+        for (int j = 0; j < SIZE; j++) {
+            int sum = 0;
+            for (int k = 0; k < SIZE; k++) {
+                sum += key[j][k] * (message[i + k] - 'A');
+            }
+            encryptedMessage[i + j] = (sum % 26) + 'A';
+        }
+    }
+    encryptedMessage[paddedLen] = '\0';
+}
+
+int main() {
+    int key[SIZE][SIZE] = {{6, 24, 1}, {13, 16, 10}, {20, 17, 15}};
+    char message[100];
+    char encryptedMessage[100];
+
+    printf("Enter the message (in uppercase letters): ");
+    scanf("%s", message);
+
+    hillEncrypt(key, message, encryptedMessage);
+
+    printf("Encrypted message: %s\n", encryptedMessage);
+
+    return 0;
+}
